@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>강의 트래커</title>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="강의 트래커">
+<meta name="theme-color" content="#2D5A3D">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F7F6F2;--surface:#FFFFFF;--border:#E2E0D8;--border-strong:#C8C5BC;
+  --text:#1A1917;--text-muted:#7A7872;--text-faint:#B0ADA6;
+  --accent:#2D5A3D;--accent-light:#E8F2EC;--accent-mid:#4A8A5E;
+  --today-border:#2D5A3D;--today-bg:#F0F7F3;
+  --radius:10px;--radius-sm:6px;
+  --shadow-lg:0 8px 28px rgba(0,0,0,.13);
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#141412;--surface:#1E1D1A;--border:#2E2D29;--border-strong:#403E38;
+  --text:#F0EEE8;--text-muted:#8A8880;--text-faint:#504E48;
+  --accent:#5AAF76;--accent-light:#1A2E20;--accent-mid:#4A8A5E;
+  --today-border:#5AAF76;--today-bg:#162019;
+}}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;padding-left:max(24px,env(safe-area-inset-left));padding-right:max(24px,env(safe-area-inset-right));height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.logo{font-family:'DM Mono',monospace;font-size:15px;font-weight:500;color:var(--accent);letter-spacing:-.02em}
+.logo span{color:var(--text-muted);font-weight:400}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius-sm);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text);transition:background .15s;white-space:nowrap}
+.btn:hover{background:var(--bg);border-color:var(--border-strong)}
+.btn svg{width:14px;height:14px;flex-shrink:0}
+main{max-width:1200px;margin:0 auto;padding:28px 20px 80px}
+.week-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.week-info{display:flex;align-items:center;gap:10px}
+.week-title{font-size:18px;font-weight:600;letter-spacing:-.03em;min-width:80px}
+.week-range{font-size:12px;color:var(--text-muted)}
+.nav-btn{width:34px;height:34px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:all .15s;flex-shrink:0}
+.nav-btn:hover{background:var(--bg);color:var(--text)}
+.nav-btn svg{width:16px;height:16px}
+.today-btn{font-family:inherit;font-size:12px;font-weight:500;padding:5px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);cursor:pointer;color:var(--text-muted);transition:all .15s}
+.today-btn:hover{background:var(--bg);color:var(--text)}
+.summary{margin-bottom:20px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.summary-chip{display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:500;border:1px solid var(--border);background:var(--surface);color:var(--text-muted)}
+.summary-chip .dot{width:7px;height:7px;border-radius:50%}
+.summary-count{font-family:'DM Mono',monospace;color:var(--text)}
+.grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+@media(max-width:720px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:460px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.day-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 10px;min-height:160px;display:flex;flex-direction:column;gap:8px}
+.day-card.today{border-color:var(--today-border);background:var(--today-bg);border-width:1.5px}
+.day-head{display:flex;align-items:baseline;justify-content:space-between}
+.day-name{font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em}
+.day-num{font-family:'DM Mono',monospace;font-size:20px;font-weight:500;line-height:1}
+.day-card.today .day-num{color:var(--accent)}
+.tags-wrap{display:flex;flex-direction:column;gap:3px;flex:1}
+.tag{display:flex;align-items:flex-start;gap:4px;padding:4px 7px;border-radius:var(--radius-sm);font-size:10px;font-weight:500;line-height:1.4}
+.tag-text{flex:1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.tag-del{background:none;border:none;cursor:pointer;font-size:13px;line-height:1;padding:0 0 0 2px;opacity:.4;color:inherit;flex-shrink:0;margin-top:1px}
+.tag-del:hover{opacity:1}
+.add-wrap{position:relative;margin-top:auto}
+.add-btn{width:100%;padding:5px 8px;background:none;border:1px dashed var(--border-strong);border-radius:var(--radius-sm);font-family:inherit;font-size:11px;color:var(--text-faint);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;transition:all .15s}
+.add-btn:hover{background:var(--bg);color:var(--text-muted);border-style:solid}
+.add-btn svg{width:12px;height:12px}
+
+/* ── Dropdown panel ── */
+.dp{
+  position:fixed; /* fixed so it's never clipped by overflow:hidden parents */
+  background:var(--surface);border:1px solid var(--border-strong);
+  border-radius:var(--radius);box-shadow:var(--shadow-lg);
+  z-index:400;width:300px;
+  display:none;flex-direction:column;overflow:hidden;
+  max-height:440px;
+}
+.dp.open{display:flex}
+
+/* search bar at top */
+.dp-search-bar{
+  display:flex;align-items:center;gap:6px;
+  padding:10px 12px 8px;border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.dp-search-bar input{
+  flex:1;padding:5px 8px;font-size:12px;font-family:inherit;
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  background:var(--bg);color:var(--text);outline:none;
+}
+.dp-search-bar input:focus{border-color:var(--accent-mid)}
+.dp-search-clear{background:none;border:none;cursor:pointer;color:var(--text-faint);font-size:16px;line-height:1;padding:0;flex-shrink:0;display:none}
+.dp-search-clear.show{display:block}
+
+/* scrollable content area */
+.dp-scroll{overflow-y:auto;flex:1}
+
+/* course accordion inside dropdown */
+.dp-course{border-bottom:1px solid var(--border)}
+.dp-course:last-child{border-bottom:none}
+.dp-course-head{
+  display:flex;align-items:center;gap:8px;
+  padding:9px 12px;cursor:pointer;
+  transition:background .12s;
+  user-select:none;
+}
+.dp-course-head:hover{background:var(--bg)}
+.dp-course-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.dp-course-label{flex:1;font-size:12px;font-weight:600;color:var(--text)}
+.dp-course-meta{font-size:10px;color:var(--text-muted);font-weight:400}
+.dp-course-arrow{font-size:10px;color:var(--text-faint);transition:transform .2s;flex-shrink:0}
+.dp-course-head.open .dp-course-arrow{transform:rotate(180deg)}
+
+/* episode list under each course */
+.dp-ep-list{display:none;padding:4px 0 6px}
+.dp-ep-list.open{display:block}
+.dp-ep-item{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:6px 12px 6px 30px;cursor:pointer;
+  transition:background .1s;
+}
+.dp-ep-item:hover{background:var(--bg)}
+.dp-ep-item.checked{background:var(--accent-light)}
+
+/* custom checkbox */
+.ep-cb{
+  width:15px;height:15px;border-radius:3px;
+  border:1.5px solid var(--border-strong);
+  background:var(--surface);flex-shrink:0;margin-top:2px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;pointer-events:none;
+}
+.dp-ep-item.checked .ep-cb{
+  background:var(--accent);border-color:var(--accent);
+}
+.ep-cb-tick{color:#fff;font-size:10px;display:none;line-height:1}
+.dp-ep-item.checked .ep-cb-tick{display:block}
+.ep-label{font-size:11px;color:var(--text);line-height:1.45;flex:1}
+.ep-num-badge{font-family:'DM Mono',monospace;font-size:9px;color:var(--text-faint);flex-shrink:0;margin-top:3px;min-width:18px}
+
+/* footer */
+.dp-footer{
+  padding:8px 12px;border-top:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;flex-shrink:0;
+}
+.dp-sel-label{flex:1;font-size:11px;color:var(--accent);font-weight:500}
+.dp-footer button{
+  padding:6px 12px;font-family:inherit;font-size:12px;font-weight:500;
+  border-radius:var(--radius-sm);cursor:pointer;
+  border:1px solid var(--border);background:var(--surface);color:var(--text);
+  transition:all .15s;
+}
+.dp-footer button:hover{background:var(--bg)}
+.dp-confirm{background:var(--accent)!important;color:#fff!important;border-color:var(--accent)!important}
+.dp-confirm:hover{background:var(--accent-mid)!important;border-color:var(--accent-mid)!important}
+
+/* ── Modal ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:500;padding:20px}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);width:100%;max-width:520px;max-height:90vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);overflow:hidden}
+.modal-head{padding:16px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-head h2{font-size:15px;font-weight:600}
+.modal-x{width:28px;height:28px;border-radius:var(--radius-sm);border:1px solid var(--border);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-muted)}
+.modal-x:hover{background:var(--bg)}
+.modal-x svg{width:14px;height:14px}
+.modal-tabs{display:flex;border-bottom:1px solid var(--border);padding:0 20px}
+.modal-tab{padding:10px 14px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:none;color:var(--text-muted);border-bottom:2px solid transparent;margin-bottom:-1px;font-family:inherit}
+.modal-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.modal-body{flex:1;overflow-y:auto;padding:14px 20px;display:flex;flex-direction:column;gap:10px}
+.modal-body.hidden{display:none}
+.course-section{border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-bottom:2px}
+.course-section-head{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg);cursor:pointer;font-size:13px;font-weight:600}
+.course-section-head:hover{background:var(--border)}
+.cs-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;border:none;cursor:pointer;transition:transform .15s}
+.cs-dot:hover{transform:scale(1.3)}
+.cs-name{flex:1}
+.cs-cnt{font-size:11px;color:var(--text-muted);font-weight:400}
+.cs-del{background:none;border:none;cursor:pointer;color:var(--text-faint);font-size:16px;padding:2px 4px}
+.cs-del:hover{color:#E24B4A}
+.cs-arrow{font-size:10px;color:var(--text-faint);transition:transform .2s}
+.course-section-head.open .cs-arrow{transform:rotate(180deg)}
+.ep-list-modal{display:none;padding:6px 10px;max-height:180px;overflow-y:auto}
+.ep-list-modal.open{display:block}
+.ep-row-m{display:flex;gap:8px;padding:4px 8px;font-size:11px;color:var(--text-muted);line-height:1.4}
+.ep-row-m .ep-n{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-faint);flex-shrink:0;min-width:20px;margin-top:1px}
+.add-form{border:1px solid var(--border);border-radius:var(--radius);padding:14px;display:flex;flex-direction:column;gap:10px}
+.add-form label{font-size:12px;font-weight:500;color:var(--text-muted)}
+.add-form input,.add-form textarea{width:100%;padding:7px 10px;font-size:12px;font-family:inherit;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);outline:none;resize:vertical;margin-top:4px}
+.add-form input:focus,.add-form textarea:focus{border-color:var(--accent-mid)}
+.add-form textarea{min-height:80px;font-size:11px;line-height:1.5}
+.hint{font-size:11px;color:var(--text-faint)}
+.cp{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.cp-opt{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:transform .15s;outline:none}
+.cp-opt:hover{transform:scale(1.2)}
+.cp-opt.active{border-color:var(--text)}
+.form-acts{display:flex;gap:8px;justify-content:flex-end}
+.form-acts button{padding:7px 16px;font-family:inherit;font-size:12px;font-weight:500;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text)}
+.form-acts .bs{background:var(--accent);color:#fff;border-color:var(--accent)}
+.form-acts .bs:hover{background:var(--accent-mid)}
+.tip{
+  position:fixed;z-index:9999;pointer-events:none;
+  background:var(--text);color:var(--bg);
+  font-size:12px;font-weight:500;line-height:1.5;
+  padding:6px 10px;border-radius:var(--radius-sm);
+  box-shadow:0 4px 12px rgba(0,0,0,.2);
+  max-width:260px;word-break:keep-all;
+  opacity:0;transition:opacity .15s;
+  white-space:pre-wrap;
+}
+.tip.show{opacity:1}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--text);color:var(--bg);font-size:13px;font-weight:500;padding:9px 18px;border-radius:999px;box-shadow:var(--shadow-lg);opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap;z-index:999}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">lecture<span>.log</span></div>
+  <div>
+    <button class="btn" onclick="openModal()">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h8M2 12h10"/></svg>
+      강의 관리
+    </button>
+  </div>
+</header>
+<main>
+  <div class="week-nav">
+    <div class="week-info">
+      <button class="nav-btn" onclick="changeWeek(-1)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 3L5 8l5 5"/></svg></button>
+      <div>
+        <div class="week-title" id="weekTitle"></div>
+        <div class="week-range" id="weekRange"></div>
+      </div>
+      <button class="nav-btn" onclick="changeWeek(1)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3l5 5-5 5"/></svg></button>
+    </div>
+    <button class="today-btn" onclick="goToday()">오늘로</button>
+  </div>
+  <div class="summary" id="summary"></div>
+  <div class="grid" id="grid"></div>
+</main>
+
+<!-- single shared dropdown -->
+<div class="dp" id="globalDp">
+  <div class="dp-search-bar">
+    <input type="text" id="dpSearchInput" placeholder="에피소드 검색..." oninput="onDpSearch(this.value)">
+    <button class="dp-search-clear" id="dpSearchClear" onclick="clearDpSearch()">×</button>
+  </div>
+  <div class="dp-scroll" id="dpScroll"></div>
+  <div class="dp-footer">
+    <span class="dp-sel-label" id="dpSelLabel"></span>
+    <button onclick="cancelDp()">취소</button>
+    <button class="dp-confirm" onclick="confirmDp()">선택 완료</button>
+  </div>
+</div>
+
+<!-- Modal -->
+<div id="modal" style="display:none">
+  <div class="modal-bg" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-head">
+        <h2>강의 관리</h2>
+        <button class="modal-x" onclick="closeModal()"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l10 10M13 3L3 13"/></svg></button>
+      </div>
+      <div class="modal-tabs">
+        <button class="modal-tab active" id="tabBtn0" onclick="switchTab(0)">강의 목록</button>
+        <button class="modal-tab" id="tabBtn1" onclick="switchTab(1)">새 강의 추가</button>
+      </div>
+      <div id="tabPane0" class="modal-body"></div>
+      <div id="tabPane1" class="modal-body hidden">
+        <div class="add-form">
+          <div><label>강의 코스 이름</label><input type="text" id="newName" placeholder="예: 영어회화 중급"></div>
+          <div><label>색상</label><div class="cp" id="colorPicker"></div></div>
+          <div>
+            <label>에피소드 목록</label>
+            <div class="hint" style="margin:4px 0 6px">한 줄에 하나씩 입력하세요</div>
+            <textarea id="newEps" placeholder="1강. 인사표현&#10;2강. 자기소개&#10;3강. 숫자 읽기"></textarea>
+          </div>
+          <div class="form-acts">
+            <button onclick="switchTab(0)">취소</button>
+            <button class="bs" onclick="addCourse()">추가</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="tip" id="tip"></div>
+
+<script>
+const PAL=[
+  {bg:'#E8F5EE',text:'#1A5C35',dot:'#2E9E5B'},
+  {bg:'#E6F1FB',text:'#0D4A8A',dot:'#2A7FD4'},
+  {bg:'#EEEDFE',text:'#3A2FAA',dot:'#6B62D6'},
+  {bg:'#FDF0E0',text:'#7A4500',dot:'#D4860A'},
+  {bg:'#FDE8E8',text:'#8A1F1F',dot:'#CC3333'},
+  {bg:'#FBE8F2',text:'#852054',dot:'#C94080'},
+  {bg:'#EAF3E0',text:'#2E5E12',dot:'#558B2F'},
+  {bg:'#FAF0E6',text:'#7A3010',dot:'#C2561A'},
+];
+const DAYS=['월','화','수','목','금','토','일'];
+
+const DEFAULTS=[{id:1,name:'스페인어 초급 문법',ci:0,episodes:["1강_Part 1/2. 주의해야 할 스페인어 발음 (DELE A1)","1강_Part 2/2. 주의해야 할 스페인어 강세 (DELE A1)","2강_Part 1/5. 명사의 성별 I (사람) *DELE A1","2강_Part 2/5. 명사의 성별 II (일반)","2강_Part 3/5. 명사의 복수형 (DELE A1)","2강_Part 4/5. 관사: 정관사 & 부정관사 (DELE A1)","2강_Part 5/5. 형용사 & 성수일치 (DELE A1)","3강_Part 1/3. 주격인칭대명사 +SER동사 형태 (DELE A1)","3강_Part 2/3. 기본문장구조 (DELE A1)","3강_Part 3/3. Ser de~출신, 원산지, 재료 표현 (DELE A1)","4강_Part 1/2. ESTAR 동사 형태 및 상태표현 (DELE A1)","4강_Part 2/2. SER & ESTAR 비교 (DELE A1)","5강_Part 1/3. ESTAR 위치 표현 & 위치표현 부사구 (DELE A1)","5강_Part 2/3. 축약형 al•del, 전치격 (DELE A1)","5강_Part 3/3. Hay 동사 '~있다' (DELE A1)","6강_Part 1/4. 지시대명사&형용사 (DELE A1)","6강_Part 2/4. 중성지시대명사 (DELE A1)","6강_Part 3/4. 의문사 (DELE A1)","6강_Part 4/4. 감탄문I (DELE A1)","7강_Part 1/4. 소유표현 전치사 DE & 소유 질문 (DELE A1)","7강_Part 2/4. 소유 형용사(소유격) I : 전치형 (DELE A1)","7강_Part3/4. 소유 형용사(소유격) II : 후치형 (DELE A1)","7강_Part4/4. 소유대명사 (DELE A1)","8강_Part 1/6. 동사기본형 & -ar형 동사 현재 규칙 (DELE A1)","8강_Part 2/6. -ar형 규칙 동사 + bien/mal/mucho (DELE A1)","8강_Part 3/6. 다양한 -ar형 규칙동사 + 문장만들기 & 파생어휘 (DELE A1)","8강_Part 4/6. 유용한 -ar형 규칙동사들 (DELE A1)","8강_Part 5/6. 의문사 + -ar형 규칙동사 (DELE A1)","8강_Part 6/6. -AR형 규칙동사 정리문제 (DELE A1)","9강_Part 1/5. -er형 동사 현재 규칙 (DELE A1)","9강_Part 2/5. 부사 만들기 (DELE A1)","9강_Part 3/5. 빈도 표현 (DELE A1)","9강_Part 4/5. -ir형 동사 현재 규칙 (DELE A1)","9강_Part 5/5. -ER/-IR형 현재 규칙동사 정리문제 (DELE A1)","10강_Part 1/5. 현재동사 불규칙 I : ser,estar,ir & Yo 불규칙I (DELE A1)","10강_Part 2/5. Yo [-go] 현재 불규칙 동사 (DELE A1)","10강_Part 3/5. 현재 강세불규칙 동사","10강_Part 4/5. IR동사 [가다] & 이동동사 +A+동사원형 (DELE A1)","10강_Part 5/5. 현재동사 불규칙 I 정리문제 (DELE A1)","11강_Part 1/7. PODER ~할 수 있다(o-ue 모음불규칙)(DELE A1)","11강_Part 2/7. O→UE 모음불규칙 동사들 (DELE A1)","11강_Part 3/7. Querer동사 & E→IE 모음불규칙 동사 (DELE A1)","11강_Part 4/7. E→I 모음불규칙 동사 (DELE A1)","11강_Part 5/7. jugar동사 & jugar al 표현 (DELE A1)","11강_Part 6/7. 현재 철자불규칙 & -y-불규칙 동사 (DELE A1)","11강_Part 7/7. 현재동사 불규칙 II 정리문제 (DELE A1)","12강_Part 1/6. IR A +동사원형 ~할 것이다 [가까운 미래] (DELE A1)","12강_Part 2/6. aprender/empezar/volver A+동사원형","12강_Part 3/6. poder+동사원형: ~할 수 있다 / saber+동사원형: ~할 줄 알다 (DELE A1)","12강_Part 4/6. querer+동사원형: ~하고 싶다 / soler+동사원형: 늘 ~하다 (DELE A1)","12강_Part 5/6. dejar/acabar/tratar de+동사원형 (DELE A1)","12강_Part 6/6. 동사결합표현 정리문제 (DELE A1)","13강_Part 1/6. 다양한 의무 표현 [ Tener que~/Deber~/Hay que~ ] (DELE A1)","13강_Part 2/6. [ deber 의 여러가지 의미 ] (DELE A1+A2)","13강_Part 3/6. [ Hace ~que 구문 : ~한 지 ~기간이 되었다 ] (DELE A1)","13강_Part 4/6. [ hace & 날씨 표현 ] (DELE A1)","13강_Part 5/6. 감탄문 II (DELE A2/B1)","13강_Part 6/6. 정리문제 [의무표현/Hace~que구문/날씨] (DELE A1)","14강_Part 1/7. 숫자 0~29 (DELE A1)","14강_Part 2/7. 숫자 30~1000 (DELE A1)","14강_Part 3/7. 숫자 읽기 주의할 점: 십+y+일 / uno (DELE A1)","14강_Part 4/7. 숫자 읽기 주의할 점: 100 / 백단위(200~900) (DELE A1)","14강_Part 5/7. 서수 (1~10), *primero/tercero (DELE A1)","14강_Part 6/7. 요일&날짜, 생일 & 생년월일 문답 (DELE A1)","14강_Part 7/7. 숫자 읽기 연습 (DELE A1)","15강_Part 1/7. 시간 질문 \"몇 시예요?\" (DELE A1)","15강_Part 2/7. 시간 읽기 I (DELE A1)","15강_Part 3/7. 시간 읽기 II (DELE A1)","15강_Part 4/7. 다양한 시간 표현 (DELE A1)","15강_Part 5/7. 요일 표현 (DELE A1)","15강_Part 6/7. 다양한 때 표현 (DELE A1)","15강_Part 7/7. 시간 표현 정리문제 [작문] (DELE A1)","16강_Part 1/5. 비교급: ~보다 더/덜~ 하다 (DELE : A1)","16강_Part 2/5. 최상급 : ~에서/~중에 가장 ~하다 (DELE : A1)","16강_Part 3/5. 동등 비교 : ~만큼 ~하다 (DELE : A1)","16강_Part 4/5. tanto~como~표현: ~뿐만 아니라 ~도","16강_Part 5/5. 비교급 정리문제 (DELE A1)","17강_Part 1/4. CONOCER동사 (DELE : A1)","17강_Part 2/4. SABER: 알다/~맛이 나다 (DELE : A1)","17강_Part 3/4. 절대최상급 -ísimo/a (DELE : A1)","17강_Part 4/4. 정리문제: Saber & Conocer / 절대최상급 (DELE A1)","18강_Part 1/4. 전치사 A 용법 / A+사람 (DELE : A1)","18강_Part 2/4. 직접목적격대명사 형태 (DELE : A1)","18강_Part 3/4. 직접목적격대명사 기본 어순 & 예외 (DELE : A1)","18강_Part 4/4. 직접목적격대명사 정리문제 (DELE : A1)","19강_Part 1/4 간접목적격 대명사 형태 및 기본 어순 (DELE : A2 이상)","19강_Part 2/4 목적격대명사 결합 (간접+ 직접) & 연습 (DELE : A2 이상)","19강_Part 3/4 목적격대명사 어순 예외 & 중복형 (DELE : A2 이상)","19강_Part 4/4 [간접/직접] 목적격대명사 정리문제 (DELE : A1)","20강_Part 1/4. Gustar동사: 의미 & 문장구조 (DELE : A1)","20강_Part 2/4. Gustar동사: 문장 & 중복형 (DELE : A1)","20강_Part 3/4. [ Gustar/ Encantar/ Preferir ] 다양한 '좋아하다' 동사 (DELE : A1)"]}];
+
+let courses=JSON.parse(localStorage.getItem('lec_c3')||'null')||DEFAULTS;
+let records=JSON.parse(localStorage.getItem('lec_r3')||'{}');
+let weekOff=0;
+let nextId=Math.max(0,...courses.map(c=>c.id))+1;
+let newCi=1;
+
+// dropdown state
+let dpKey=null; // current date key
+let dpSel={}; // "cid_ei" -> true
+
+function save(){
+  localStorage.setItem('lec_c3',JSON.stringify(courses));
+  localStorage.setItem('lec_r3',JSON.stringify(records));
+}
+
+// ── Date utils ──
+function getMonday(d){const dt=new Date(d),day=dt.getDay();dt.setDate(dt.getDate()-(day===0?6:day-1));dt.setHours(0,0,0,0);return dt;}
+function weekDates(){const m=getMonday(new Date());m.setDate(m.getDate()+weekOff*7);return Array.from({length:7},(_,i)=>{const d=new Date(m);d.setDate(d.getDate()+i);return d;});}
+function dk(d){return d.toISOString().slice(0,10);}
+function fs(d){return `${d.getMonth()+1}/${d.getDate()}`;}
+
+// ── Render week ──
+function render(){
+  const dates=weekDates(),todayKey=dk(new Date());
+  document.getElementById('weekTitle').textContent=`${dates[0].getFullYear()}년 ${dates[0].getMonth()+1}월`;
+  document.getElementById('weekRange').textContent=`${fs(dates[0])} – ${fs(dates[6])}`;
+  renderSummary(dates);
+  const grid=document.getElementById('grid');grid.innerHTML='';
+  dates.forEach((d,i)=>{
+    const key=dk(d),isToday=key===todayKey;
+    const card=document.createElement('div');
+    card.className='day-card'+(isToday?' today':'');
+    card.innerHTML=`
+      <div class="day-head">
+        <span class="day-name">${DAYS[i]}</span>
+        <span class="day-num">${d.getDate()}</span>
+      </div>
+      <div class="tags-wrap" id="tags-${key}"></div>
+      <div class="add-wrap" id="aw-${key}">
+        <button class="add-btn" onclick="openDp('${key}',event)">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v10M3 8h10"/></svg>
+          추가
+        </button>
+      </div>`;
+    grid.appendChild(card);
+    renderTags(key);
+  });
+}
+
+function renderSummary(dates){
+  const el=document.getElementById('summary'),cnt={};
+  dates.forEach(d=>(records[dk(d)]||[]).forEach(r=>{cnt[r.cid]=(cnt[r.cid]||0)+1;}));
+  const total=Object.values(cnt).reduce((a,b)=>a+b,0);
+  if(!total){el.innerHTML='';return;}
+  let h=`<div class="summary-chip"><span>이번 주</span><span class="summary-count">${total}강</span></div>`;
+  Object.entries(cnt).sort((a,b)=>b[1]-a[1]).forEach(([cid,n])=>{
+    const c=courses.find(x=>x.id==cid);if(!c)return;
+    const col=PAL[c.ci%PAL.length];
+    h+=`<div class="summary-chip"><span class="dot" style="background:${col.dot}"></span><span>${c.name}</span><span class="summary-count">${n}</span></div>`;
+  });
+  el.innerHTML=h;
+}
+
+function renderTags(key){
+  const el=document.getElementById('tags-'+key);if(!el)return;
+  el.innerHTML='';
+  (records[key]||[]).forEach(r=>{
+    const c=courses.find(x=>x.id===r.cid);if(!c)return;
+    const col=PAL[c.ci%PAL.length],ep=c.episodes[r.ei]||'';
+    const tag=document.createElement('div');
+    tag.className='tag';tag.style.background=col.bg;tag.style.color=col.text;
+    const tipText=`[${c.name}]\n${ep}`;
+    tag.innerHTML=`<span class="tag-text">${ep}</span><button class="tag-del" onclick="removeRec('${key}',${r.cid},${r.ei})">×</button>`;
+    tag.addEventListener('mouseenter',e=>showTip(e,tipText));
+    tag.addEventListener('mousemove',moveTip);
+    tag.addEventListener('mouseleave',hideTip);
+    el.appendChild(tag);
+  });
+}
+
+// ── Dropdown ──
+function openDp(key,e){
+  e.stopPropagation();
+  if(dpKey===key){closeDp();return;}
+  dpKey=key; dpSel={};
+  (records[key]||[]).forEach(r=>{dpSel[`${r.cid}_${r.ei}`]=true;});
+
+  // position dropdown near the button
+  const aw=document.getElementById('aw-'+key);
+  const rect=aw.getBoundingClientRect();
+  const dp=document.getElementById('globalDp');
+  dp.style.left=Math.min(rect.left,window.innerWidth-310)+'px';
+  const spaceBelow=window.innerHeight-rect.bottom;
+  if(spaceBelow<250){
+    dp.style.top=''; dp.style.bottom=(window.innerHeight-rect.top+4)+'px';
+  } else {
+    dp.style.bottom=''; dp.style.top=(rect.bottom+4)+'px';
+  }
+
+  document.getElementById('dpSearchInput').value='';
+  document.getElementById('dpSearchClear').classList.remove('show');
+  buildDpContent('');
+  dp.classList.add('open');
+}
+
+function closeDp(){
+  document.getElementById('globalDp').classList.remove('open');
+  dpKey=null; dpSel={};
+}
+
+function onDpSearch(q){
+  document.getElementById('dpSearchClear').classList.toggle('show',q.length>0);
+  buildDpContent(q);
+}
+function clearDpSearch(){
+  document.getElementById('dpSearchInput').value='';
+  document.getElementById('dpSearchClear').classList.remove('show');
+  buildDpContent('');
+}
+
+function buildDpContent(q){
+  const scroll=document.getElementById('dpScroll');
+  scroll.innerHTML='';
+  courses.forEach(c=>{
+    const col=PAL[c.ci%PAL.length];
+    const eps=c.episodes.map((ep,ei)=>({ep,ei})).filter(({ep})=>!q||ep.includes(q)||c.name.includes(q));
+    if(!eps.length)return;
+
+    // checked count for this course
+    const checkedInCourse=eps.filter(({ei})=>dpSel[`${c.id}_${ei}`]).length;
+
+    const block=document.createElement('div');
+    block.className='dp-course';
+    const head=document.createElement('div');
+    head.className='dp-course-head'+(q?' open':''); // auto-open when searching
+    head.innerHTML=`
+      <span class="dp-course-dot" style="background:${col.dot}"></span>
+      <span class="dp-course-label">${c.name}</span>
+      <span class="dp-course-meta" id="dpcm-${c.id}">${checkedInCourse?checkedInCourse+'개 선택 · ':''} ${eps.length}강</span>
+      <span class="dp-course-arrow">▾</span>`;
+    head.onclick=()=>{
+      head.classList.toggle('open');
+      epList.classList.toggle('open');
+    };
+
+    const epList=document.createElement('div');
+    epList.className='dp-ep-list'+(q?' open':'');
+    eps.forEach(({ep,ei})=>{
+      const selKey=`${c.id}_${ei}`;
+      const checked=!!dpSel[selKey];
+      const item=document.createElement('div');
+      item.className='dp-ep-item'+(checked?' checked':'');
+      item.id=`dpei-${c.id}-${ei}`;
+      item.innerHTML=`
+        <span class="ep-num-badge">${ei+1}</span>
+        <div class="ep-cb"><span class="ep-cb-tick">✓</span></div>
+        <span class="ep-label">${ep}</span>`;
+      item.onclick=()=>toggleEp(c.id,ei,selKey);
+      epList.appendChild(item);
+    });
+
+    block.appendChild(head);block.appendChild(epList);
+    scroll.appendChild(block);
+  });
+  updateSelLabel();
+}
+
+function toggleEp(cid,ei,selKey){
+  if(dpSel[selKey])delete dpSel[selKey]; else dpSel[selKey]=true;
+  const item=document.getElementById(`dpei-${cid}-${ei}`);
+  if(item)item.classList.toggle('checked',!!dpSel[selKey]);
+  // update course meta count
+  const c=courses.find(x=>x.id===cid);
+  if(c){
+    const cnt=c.episodes.reduce((a,_,i)=>(dpSel[`${cid}_${i}`]?a+1:a),0);
+    const meta=document.getElementById('dpcm-'+cid);
+    if(meta)meta.textContent=`${cnt?cnt+'개 선택 · ':''}${c.episodes.length}강`;
+  }
+  updateSelLabel();
+}
+
+function updateSelLabel(){
+  const cnt=Object.keys(dpSel).length;
+  const el=document.getElementById('dpSelLabel');
+  el.textContent=cnt?`${cnt}개 선택됨`:'';
+}
+
+function confirmDp(){
+  if(!dpKey)return;
+  const existing=(records[dpKey]||[]).map(r=>`${r.cid}_${r.ei}`);
+  const toAdd=Object.keys(dpSel).filter(k=>!existing.includes(k));
+  const added=toAdd.map(k=>{const[cid,ei]=k.split('_');return{cid:parseInt(cid),ei:parseInt(ei)};});
+  records[dpKey]=[...(records[dpKey]||[]),...added];
+  save();
+  const key=dpKey;
+  closeDp();
+  renderTags(key);
+  renderSummary(weekDates());
+  if(added.length)toast(`${added.length}강 추가 완료`);
+}
+
+function cancelDp(){closeDp();}
+
+function removeRec(key,cid,ei){
+  records[key]=(records[key]||[]).filter(r=>!(r.cid==cid&&r.ei==ei));
+  save();renderTags(key);renderSummary(weekDates());
+}
+
+document.addEventListener('click',e=>{
+  if(!dpKey)return;
+  const dp=document.getElementById('globalDp');
+  if(!dp.contains(e.target))closeDp();
+});
+
+function changeWeek(d){weekOff+=d;render();}
+function goToday(){weekOff=0;render();}
+
+// ── Modal ──
+let newCiVal=1;
+function openModal(){renderTabList();initCP();document.getElementById('modal').style.display='block';}
+function closeModal(){document.getElementById('modal').style.display='none';}
+function switchTab(i){
+  [0,1].forEach(j=>{
+    document.getElementById('tabBtn'+j).classList.toggle('active',i===j);
+    document.getElementById('tabPane'+j).classList.toggle('hidden',i!==j);
+  });
+  if(i===0)renderTabList();
+}
+
+function renderTabList(){
+  const el=document.getElementById('tabPane0');el.innerHTML='';
+  if(!courses.length){el.innerHTML='<div style="font-size:13px;color:var(--text-faint);text-align:center;padding:20px">강의 없음</div>';return;}
+  courses.forEach(c=>{
+    const col=PAL[c.ci%PAL.length];
+    const sec=document.createElement('div');sec.className='course-section';
+    const epHtml=c.episodes.map((ep,i)=>`<div class="ep-row-m"><span class="ep-n">${i+1}</span><span>${ep}</span></div>`).join('');
+    sec.innerHTML=`
+      <div class="course-section-head" onclick="toggleCS(this)">
+        <button class="cs-dot" style="background:${col.dot}" onclick="event.stopPropagation();cycleColor(${c.id})" title="색상 변경"></button>
+        <span class="cs-name">${c.name}</span>
+        <span class="cs-cnt">${c.episodes.length}강</span>
+        <button class="cs-del" onclick="event.stopPropagation();delCourse(${c.id})" title="삭제">×</button>
+        <span class="cs-arrow">▾</span>
+      </div>
+      <div class="ep-list-modal">${epHtml}</div>`;
+    el.appendChild(sec);
+  });
+}
+
+function toggleCS(head){
+  head.classList.toggle('open');
+  head.nextElementSibling.classList.toggle('open');
+}
+
+function cycleColor(id){
+  const c=courses.find(x=>x.id===id);if(!c)return;
+  c.ci=(c.ci+1)%PAL.length;save();renderTabList();render();
+}
+function delCourse(id){
+  const c=courses.find(x=>x.id===id);
+  if(!confirm(`"${c?.name}" 삭제할까요?`))return;
+  courses=courses.filter(x=>x.id!==id);
+  Object.keys(records).forEach(k=>{records[k]=(records[k]||[]).filter(r=>r.cid!==id);});
+  save();renderTabList();render();
+}
+
+function initCP(){
+  const cp=document.getElementById('colorPicker');cp.innerHTML='';
+  PAL.forEach((p,i)=>{
+    const b=document.createElement('button');
+    b.className='cp-opt'+(i===newCiVal?' active':'');
+    b.style.background=p.dot;
+    b.onclick=()=>{newCiVal=i;cp.querySelectorAll('.cp-opt').forEach((x,j)=>x.classList.toggle('active',j===i));};
+    cp.appendChild(b);
+  });
+}
+
+function addCourse(){
+  const name=document.getElementById('newName').value.trim();
+  if(!name){toast('이름을 입력해주세요');return;}
+  if(courses.find(c=>c.name===name)){toast('이미 있는 강의예요');return;}
+  const eps=document.getElementById('newEps').value.split('\n').map(l=>l.trim()).filter(Boolean);
+  courses.push({id:nextId++,name,ci:newCiVal,episodes:eps});
+  save();
+  document.getElementById('newName').value='';
+  document.getElementById('newEps').value='';
+  switchTab(0);render();
+  toast(`"${name}" 추가 완료 (${eps.length}강)`);
+}
+
+let tt;
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('show'),2400);
+}
+
+// ── Tooltip ──
+const tipEl=document.getElementById('tip');
+let tipTimer;
+function showTip(e,text){
+  clearTimeout(tipTimer);
+  tipEl.textContent=text;
+  moveTip(e);
+  tipTimer=setTimeout(()=>tipEl.classList.add('show'),180);
+}
+function moveTip(e){
+  const pad=14,tw=tipEl.offsetWidth||260,th=tipEl.offsetHeight||40;
+  let x=e.clientX+pad,y=e.clientY+pad;
+  if(x+tw>window.innerWidth-8)x=e.clientX-tw-pad;
+  if(y+th>window.innerHeight-8)y=e.clientY-th-pad;
+  tipEl.style.left=x+'px';tipEl.style.top=y+'px';
+}
+function hideTip(){clearTimeout(tipTimer);tipEl.classList.remove('show');}
+
+render();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
