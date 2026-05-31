@@ -67,17 +67,17 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 40px;min-height:calc(100vh
   .grid{grid-template-columns:repeat(7,minmax(0,1fr))}
 }
 
-/* 태블릿 세로 / 폴드 펼침 (600px~1023px) → 4열 2행 */
+/* 태블릿 세로 / 폴드 펼침 세로+가로 (600px~1023px) → 4열 2행 */
 @media(min-width:600px) and (max-width:1023px){
   .grid{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
 
-/* 중간 폰 / 폴드 접힘 (461px~599px) → 4열 2행 */
+/* 중간 폰 / 폴드 접힘 세로 (461px~599px) → 4열 2행 */
 @media(max-width:599px) and (min-width:461px){
   .grid{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
 
-/* 일반 스마트폰 (460px↓) → 2열 */
+/* 일반 스마트폰 세로 (460px↓) → 2열 */
 @media(max-width:460px){
   .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
@@ -88,16 +88,27 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 40px;min-height:calc(100vh
   .day-card{padding:8px 6px}
 }
 
-/* 가로 모드 (landscape, 높이 600px↓) — 모든 기기 7열 */
-@media(orientation:landscape) and (max-height:600px){
+/* 일반 폰 가로 모드 (landscape, 높이 500px↓, 너비 600px↓) → 7열 */
+@media(orientation:landscape) and (max-height:500px) and (max-width:599px){
   main{padding:10px 14px 12px}
   .week-nav{margin-bottom:8px}
   .summary{margin-bottom:8px}
-  .grid{grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:5px}
+  .grid{grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
   .day-card{padding:7px 5px;gap:4px}
   .day-num{font-size:14px!important}
   .tag{padding:2px 5px;font-size:9px}
   .add-btn{padding:3px 4px;font-size:10px}
+}
+
+/* 폴드 접힘 가로 모드 (landscape, 높이 400px↓, 너비 600~800px) → 7열 */
+@media(orientation:landscape) and (max-height:400px) and (min-width:600px) and (max-width:800px){
+  main{padding:10px 14px 12px}
+  .week-nav{margin-bottom:8px}
+  .summary{margin-bottom:8px}
+  .grid{grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+  .day-card{padding:7px 5px;gap:4px}
+  .day-num{font-size:14px!important}
+  .tag{padding:2px 5px;font-size:9px}
 }
 .day-card.today{border-color:var(--today-border);background:var(--today-bg);border-width:1.5px}
 .day-head{display:flex;align-items:baseline;justify-content:space-between}
