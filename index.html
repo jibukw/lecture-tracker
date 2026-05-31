@@ -60,48 +60,24 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 40px;min-height:calc(100vh
 }
 
 /* 태블릿 / 폴드 펼침 (가로 800px 이상, 세로가 긴 경우) */
-@media(min-width:800px) and (max-height:1000px){
+/* ── 반응형 레이아웃 ── */
+
+/* PC / 넓은 태블릿 가로 (1024px↑) */
+@media(min-width:1024px){
   .grid{grid-template-columns:repeat(7,minmax(0,1fr))}
 }
 
-/* 폴드 펼침 세로 모드 (가로 600~900px, 세로 800px 이상) — (1)방식 4열 */
-@media(min-width:600px) and (max-width:900px) and (min-height:800px){
+/* 태블릿 세로 / 폴드 펼침 (600px~1023px) → 4열 2행 */
+@media(min-width:600px) and (max-width:1023px){
   .grid{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
 
-/* 가로 모드 (landscape) — 폰/폴드 공통 */
-@media(orientation:landscape) and (max-height:600px){
-  main{padding:10px 14px 12px;min-height:calc(100vh - 56px)}
-  .week-nav{margin-bottom:8px}
-  .summary{margin-bottom:8px;flex-shrink:0}
-  .grid{grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
-  .day-card{padding:7px 5px;gap:4px}
-  .day-num{font-size:14px!important}
-  .tag{padding:2px 5px;font-size:9px}
-  .add-btn{padding:3px 4px;font-size:10px}
-}
-
-/* 폴드 가로 모드 landscape — 4열+4열 안 되니까 7열 유지 */
-@media(orientation:landscape) and (min-width:700px) and (max-height:600px){
-  .grid{grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
-}
-
-/* 폴드 펼침 가로 모드 (landscape, 키 600~900px) — 7열로 넓게 */
-@media(orientation:landscape) and (min-width:700px) and (min-height:600px) and (max-height:900px){
-  .grid{grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
-}
-
-/* 일반 태블릿 / PC (900px↑) */
-@media(min-width:900px){
-  .grid{grid-template-columns:repeat(7,minmax(0,1fr))}
-}
-
-/* 중간 화면 (폴드 접힘 / 작은 태블릿 세로) */
-@media(max-width:720px) and (min-width:461px){
+/* 중간 폰 / 폴드 접힘 (461px~599px) → 4열 2행 */
+@media(max-width:599px) and (min-width:461px){
   .grid{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
 
-/* 일반 스마트폰 */
+/* 일반 스마트폰 (460px↓) → 2열 */
 @media(max-width:460px){
   .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
@@ -110,6 +86,18 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 40px;min-height:calc(100vh
 @media(max-width:360px){
   .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .day-card{padding:8px 6px}
+}
+
+/* 가로 모드 (landscape, 높이 600px↓) — 모든 기기 7열 */
+@media(orientation:landscape) and (max-height:600px){
+  main{padding:10px 14px 12px}
+  .week-nav{margin-bottom:8px}
+  .summary{margin-bottom:8px}
+  .grid{grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:5px}
+  .day-card{padding:7px 5px;gap:4px}
+  .day-num{font-size:14px!important}
+  .tag{padding:2px 5px;font-size:9px}
+  .add-btn{padding:3px 4px;font-size:10px}
 }
 .day-card.today{border-color:var(--today-border);background:var(--today-bg);border-width:1.5px}
 .day-head{display:flex;align-items:baseline;justify-content:space-between}
