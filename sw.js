@@ -1,4 +1,4 @@
-const CACHE = 'lecture-tracker-v7';
+const CACHE = 'lecture-tracker-v8';
 const ASSETS = [
   './index.html',
   './manifest.json',
