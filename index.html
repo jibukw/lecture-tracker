@@ -22,12 +22,35 @@
   --radius:10px;--radius-sm:6px;
   --shadow-lg:0 8px 28px rgba(0,0,0,.13);
 }
-@media(prefers-color-scheme:dark){:root{
+body.dark{
   --bg:#141412;--surface:#1E1D1A;--border:#2E2D29;--border-strong:#403E38;
   --text:#F0EEE8;--text-muted:#8A8880;--text-faint:#504E48;
   --accent:#5AAF76;--accent-light:#1A2E20;--accent-mid:#4A8A5E;
   --today-border:#5AAF76;--today-bg:#162019;
+  --shadow-lg:0 8px 28px rgba(0,0,0,.35);
+}
+/* 시스템 다크모드는 수동 설정 없을 때만 적용 */
+@media(prefers-color-scheme:dark){body:not(.light):not(.dark){
+  --bg:#141412;--surface:#1E1D1A;--border:#2E2D29;--border-strong:#403E38;
+  --text:#F0EEE8;--text-muted:#8A8880;--text-faint:#504E48;
+  --accent:#5AAF76;--accent-light:#1A2E20;--accent-mid:#4A8A5E;
+  --today-border:#5AAF76;--today-bg:#162019;
+  --shadow-lg:0 8px 28px rgba(0,0,0,.35);
 }}
+/* 헤더 우측 컨트롤 */
+.hd-controls{display:flex;align-items:center;gap:6px}
+.icon-btn{width:34px;height:34px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:16px;transition:all .15s;flex-shrink:0}
+.icon-btn:hover{background:var(--bg);border-color:var(--border-strong);color:var(--text)}
+/* 언어 선택 드롭다운 */
+.lang-wrap{position:relative}
+.lang-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);cursor:pointer;font-family:inherit;font-size:12px;font-weight:500;color:var(--text-muted);transition:all .15s}
+.lang-btn:hover{background:var(--bg);border-color:var(--border-strong);color:var(--text)}
+.lang-panel{position:absolute;top:calc(100% + 4px);right:0;background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--radius);box-shadow:var(--shadow-lg);z-index:200;min-width:130px;padding:4px;display:none}
+.lang-panel.open{display:block}
+.lang-opt{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:var(--radius-sm);font-size:12px;cursor:pointer;color:var(--text);transition:background .1s;border:none;background:none;width:100%;font-family:inherit;text-align:left}
+.lang-opt:hover{background:var(--bg)}
+.lang-opt.active{background:var(--accent-light);color:var(--accent);font-weight:600}
+.lang-flag{font-size:14px}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5}
 header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;padding-left:max(24px,env(safe-area-inset-left));padding-right:max(24px,env(safe-area-inset-right));height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
@@ -301,10 +324,27 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 40px;min-height:calc(100vh
 <body>
 <header>
   <div class="logo">lecture<span>.log</span></div>
-  <div>
+  <div class="hd-controls">
+    <div class="lang-wrap" id="langWrap">
+      <button class="lang-btn" onclick="toggleLangPanel(event)" id="langBtn">
+        <span id="langFlag">🇰🇷</span>
+        <span id="langLabel">한국어</span>
+        <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6l5 5 5-5"/></svg>
+      </button>
+      <div class="lang-panel" id="langPanel">
+        <button class="lang-opt active" onclick="setLang('ko',this)"><span class="lang-flag">🇰🇷</span>한국어</button>
+        <button class="lang-opt" onclick="setLang('en',this)"><span class="lang-flag">🇺🇸</span>English</button>
+        <button class="lang-opt" onclick="setLang('ja',this)"><span class="lang-flag">🇯🇵</span>日本語</button>
+        <button class="lang-opt" onclick="setLang('zh',this)"><span class="lang-flag">🇨🇳</span>中文</button>
+        <button class="lang-opt" onclick="setLang('es',this)"><span class="lang-flag">🇪🇸</span>Español</button>
+      </div>
+    </div>
+    <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" title="다크/라이트 모드">
+      <svg id="themeIcon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M8 3V1M8 15v-2M3 8H1M15 8h-2M4.22 4.22L2.81 2.81M13.19 13.19l-1.41-1.41M4.22 11.78l-1.41 1.41M13.19 2.81l-1.41 1.41M11 8a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+    </button>
     <button class="btn" onclick="openModal()">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h8M2 12h10"/></svg>
-      강의 관리
+      <span data-i18n="manageBtn">강의 관리</span>
     </button>
   </div>
 </header>
@@ -321,7 +361,7 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 40px;min-height:calc(100vh
       </div>
       <button class="nav-btn" onclick="changeWeek(1)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3l5 5-5 5"/></svg></button>
     </div>
-    <button class="today-btn" onclick="goToday()">오늘로</button>
+    <button class="today-btn" onclick="goToday()" data-i18n="todayBtn">오늘로</button>
   </div>
   <div class="summary" id="summary"></div>
   <div class="grid" id="grid"></div>
@@ -350,8 +390,8 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 40px;min-height:calc(100vh
         <button class="modal-x" onclick="closeModal()"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l10 10M13 3L3 13"/></svg></button>
       </div>
       <div class="modal-tabs">
-        <button class="modal-tab active" id="tabBtn0" onclick="switchTab(0)">강의 목록</button>
-        <button class="modal-tab" id="tabBtn1" onclick="switchTab(1)">새 강의 추가</button>
+        <button class="modal-tab active" id="tabBtn0" onclick="switchTab(0)" data-i18n="tabList">강의 목록</button>
+        <button class="modal-tab" id="tabBtn1" onclick="switchTab(1)" data-i18n="tabAdd">새 강의 추가</button>
       </div>
       <div id="tabPane0" class="modal-body"></div>
       <div id="tabPane1" class="modal-body hidden">
@@ -379,10 +419,7 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 40px;min-height:calc(100vh
     <span class="cal-month-label" id="calMonthLabel"></span>
     <button class="cal-nav" onclick="calChangeMonth(1)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3l5 5-5 5"/></svg></button>
   </div>
-  <div class="cal-daynames">
-    <div class="cal-dn">월</div><div class="cal-dn">화</div><div class="cal-dn">수</div>
-    <div class="cal-dn">목</div><div class="cal-dn">금</div><div class="cal-dn">토</div><div class="cal-dn">일</div>
-  </div>
+  <div class="cal-daynames" id="calDayNames"></div>
   <div class="cal-grid" id="calGrid"></div>
   <div class="cal-foot">
     <button class="cal-today-btn" onclick="calGoToday()">오늘</button>
@@ -442,7 +479,7 @@ function render(){
     card.className='day-card'+(isToday?' today':'');
     card.innerHTML=`
       <div class="day-head">
-        <span class="day-name">${DAYS[i]}</span>
+        <span class="day-name">${(LANGS[curLang]||LANGS.ko).days[i]}</span>
         <span class="day-num">${d.getDate()}</span>
       </div>
       <div class="tags-wrap" id="tags-${key}"></div>
@@ -654,6 +691,9 @@ document.addEventListener('click',e=>{
     const btn=document.getElementById('weekTitle');
     if(!popup.contains(e.target)&&!btn.contains(e.target))closeCal();
   }
+  const lp=document.getElementById('langPanel');
+  const lw=document.getElementById('langWrap');
+  if(lp&&lp.classList.contains('open')&&!lw.contains(e.target))lp.classList.remove('open');
 });
 
 function changeWeek(d){weekOff+=d;render();}
@@ -1015,7 +1055,14 @@ function calGoToday(){
 }
 
 function buildCal(){
-  document.getElementById('calMonthLabel').textContent=`${calYear}년 ${calMonth+1}월`;
+  const days=(LANGS[curLang]||LANGS.ko).days;
+  const dn=document.getElementById('calDayNames');
+  if(dn)dn.innerHTML=days.map(d=>`<div class="cal-dn">${d}</div>`).join('');
+  const monthFmt=curLang==='ko'?`${calYear}년 ${calMonth+1}월`:
+    curLang==='ja'?`${calYear}年${calMonth+1}月`:
+    curLang==='zh'?`${calYear}年${calMonth+1}月`:
+    new Date(calYear,calMonth,1).toLocaleDateString(curLang==='es'?'es-ES':curLang==='en'?'en-US':'ko-KR',{year:'numeric',month:'long'});
+  document.getElementById('calMonthLabel').textContent=monthFmt;
   const grid=document.getElementById('calGrid');
   grid.innerHTML='';
 
@@ -1084,6 +1131,146 @@ function toast(msg){
   clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('show'),2400);
 }
 
+// ── 테마 ──
+const THEME_KEY='lec_theme';
+function initTheme(){
+  const saved=localStorage.getItem(THEME_KEY);
+  if(saved==='dark')document.body.classList.add('dark');
+  else if(saved==='light')document.body.classList.add('light');
+  updateThemeIcon();
+}
+function toggleTheme(){
+  const isDark=document.body.classList.contains('dark')||
+    (!document.body.classList.contains('light')&&window.matchMedia('(prefers-color-scheme:dark)').matches);
+  if(isDark){
+    document.body.classList.remove('dark');document.body.classList.add('light');
+    localStorage.setItem(THEME_KEY,'light');
+  } else {
+    document.body.classList.remove('light');document.body.classList.add('dark');
+    localStorage.setItem(THEME_KEY,'dark');
+  }
+  updateThemeIcon();
+}
+function updateThemeIcon(){
+  const isDark=document.body.classList.contains('dark')||
+    (!document.body.classList.contains('light')&&window.matchMedia('(prefers-color-scheme:dark)').matches);
+  const icon=document.getElementById('themeIcon');
+  if(!icon)return;
+  // 다크면 태양(라이트로 바꾸기), 라이트면 달(다크로 바꾸기)
+  if(isDark){
+    icon.innerHTML='<path d="M8 3V1M8 15v-2M3 8H1M15 8h-2M4.22 4.22L2.81 2.81M13.19 13.19l-1.41-1.41M4.22 11.78l-1.41 1.41M13.19 2.81l-1.41 1.41M11 8a3 3 0 11-6 0 3 3 0 016 0z"/>';
+  } else {
+    icon.innerHTML='<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z" transform="translate(-4,-1) scale(1.1)"/>';
+  }
+}
+
+// ── 다국어 ──
+const LANG_KEY='lec_lang';
+const LANGS={
+  ko:{flag:'🇰🇷',label:'한국어',
+    manageBtn:'강의 관리',todayBtn:'오늘로',
+    tabList:'강의 목록',tabAdd:'새 강의 추가',
+    addEpPlaceholder:'새 강의 이름',addCoursePlaceholder:'강의 코스 이름',
+    addEpInputPlaceholder:'새 에피소드 이름',addCourseEpPlaceholder:'에피소드 목록',
+    modalTitle:'강의 관리',addBtn:'+ 추가',
+    searchPlaceholder:'에피소드 검색...',confirmBtn:'선택 완료',cancelBtn:'취소',
+    todayCalBtn:'오늘',weekUnit:'강',addLabel:'추가',
+    epHint:'한 줄에 하나씩 입력하세요',
+    days:['월','화','수','목','금','토','일'],
+  },
+  en:{flag:'🇺🇸',label:'English',
+    manageBtn:'Manage',todayBtn:'Today',
+    tabList:'Courses',tabAdd:'Add Course',
+    addEpPlaceholder:'Course name',addCoursePlaceholder:'Course name',
+    addEpInputPlaceholder:'New episode name',addCourseEpPlaceholder:'Episode list',
+    modalTitle:'Manage Courses',addBtn:'+ Add',
+    searchPlaceholder:'Search episodes...',confirmBtn:'Confirm',cancelBtn:'Cancel',
+    todayCalBtn:'Today',weekUnit:'ep',addLabel:'Add',
+    epHint:'One per line',
+    days:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+  },
+  ja:{flag:'🇯🇵',label:'日本語',
+    manageBtn:'講座管理',todayBtn:'今日',
+    tabList:'講座一覧',tabAdd:'講座追加',
+    addEpPlaceholder:'講座名',addCoursePlaceholder:'講座名',
+    addEpInputPlaceholder:'エピソード名',addCourseEpPlaceholder:'エピソード一覧',
+    modalTitle:'講座管理',addBtn:'+ 追加',
+    searchPlaceholder:'エピソードを検索...',confirmBtn:'選択完了',cancelBtn:'キャンセル',
+    todayCalBtn:'今日',weekUnit:'本',addLabel:'追加',
+    epHint:'1行に1つ入力してください',
+    days:['月','火','水','木','金','土','日'],
+  },
+  zh:{flag:'🇨🇳',label:'中文',
+    manageBtn:'课程管理',todayBtn:'今天',
+    tabList:'课程列表',tabAdd:'添加课程',
+    addEpPlaceholder:'课程名称',addCoursePlaceholder:'课程名称',
+    addEpInputPlaceholder:'新集名称',addCourseEpPlaceholder:'集数列表',
+    modalTitle:'课程管理',addBtn:'+ 添加',
+    searchPlaceholder:'搜索集数...',confirmBtn:'确认选择',cancelBtn:'取消',
+    todayCalBtn:'今天',weekUnit:'集',addLabel:'添加',
+    epHint:'每行输入一个',
+    days:['周一','周二','周三','周四','周五','周六','周日'],
+  },
+  es:{flag:'🇪🇸',label:'Español',
+    manageBtn:'Gestionar',todayBtn:'Hoy',
+    tabList:'Cursos',tabAdd:'Añadir curso',
+    addEpPlaceholder:'Nombre del curso',addCoursePlaceholder:'Nombre del curso',
+    addEpInputPlaceholder:'Nuevo episodio',addCourseEpPlaceholder:'Lista de episodios',
+    modalTitle:'Gestionar cursos',addBtn:'+ Añadir',
+    searchPlaceholder:'Buscar episodios...',confirmBtn:'Confirmar',cancelBtn:'Cancelar',
+    todayCalBtn:'Hoy',weekUnit:'ep',addLabel:'Añadir',
+    epHint:'Una por línea',
+    days:['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'],
+  },
+};
+let curLang='ko';
+
+function initLang(){
+  const saved=localStorage.getItem(LANG_KEY)||'ko';
+  curLang=saved;
+  document.getElementById('langFlag').textContent=LANGS[saved].flag;
+  document.getElementById('langLabel').textContent=LANGS[saved].label;
+  document.querySelectorAll('.lang-opt').forEach(b=>{
+    b.classList.toggle('active',b.getAttribute('onclick').includes(`'${saved}'`));
+  });
+  applyI18n();
+}
+
+function t(key){return (LANGS[curLang]||LANGS.ko)[key]||key;}
+
+function applyI18n(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    el.textContent=t(el.dataset.i18n);
+  });
+  // 검색 input placeholder
+  const si=document.getElementById('dpSearchInput');
+  if(si)si.placeholder=t('searchPlaceholder');
+  // 신규강의 input
+  const ni=document.getElementById('newName');
+  if(ni)ni.placeholder=t('addCoursePlaceholder');
+  const ne=document.getElementById('newEps');
+  if(ne)ne.placeholder=t('addCourseEpPlaceholder');
+}
+
+function setLang(code,btn){
+  curLang=code;
+  localStorage.setItem(LANG_KEY,code);
+  document.getElementById('langFlag').textContent=LANGS[code].flag;
+  document.getElementById('langLabel').textContent=LANGS[code].label;
+  document.querySelectorAll('.lang-opt').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('langPanel').classList.remove('open');
+  applyI18n();
+  render();
+}
+
+function toggleLangPanel(e){
+  e.stopPropagation();
+  document.getElementById('langPanel').classList.toggle('open');
+}
+
+// 언어 패널 바깥 클릭 닫기는 아래 document click에서 처리
+
 // ── Tooltip ──
 const tipEl=document.getElementById('tip');
 let tipTimer;
@@ -1102,6 +1289,8 @@ function moveTip(e){
 }
 function hideTip(){clearTimeout(tipTimer);tipEl.classList.remove('show');}
 
+initTheme();
+initLang();
 render();
 
 if('serviceWorker' in navigator){
