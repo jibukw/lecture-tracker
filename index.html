@@ -62,13 +62,11 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 40px;min-height:calc(100vh
 /* 태블릿 / 폴드 펼침 (가로 800px 이상, 세로가 긴 경우) */
 @media(min-width:800px) and (max-height:1000px){
   .grid{grid-template-columns:repeat(7,minmax(0,1fr))}
-  .day-card{min-height:120px}
 }
 
-/* 폴드 펼침 세로 모드 (가로 600~900px, 세로 800px 이상) */
+/* 폴드 펼침 세로 모드 (가로 600~900px, 세로 800px 이상) — (1)방식 4열 */
 @media(min-width:600px) and (max-width:900px) and (min-height:800px){
   .grid{grid-template-columns:repeat(4,minmax(0,1fr))}
-  .day-card{min-height:0}
 }
 
 /* 가로 모드 (landscape) — 폰/폴드 공통 */
@@ -83,17 +81,22 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 40px;min-height:calc(100vh
   .add-btn{padding:3px 4px;font-size:10px}
 }
 
-/* 폴드 가로 모드 (landscape, 넓은 화면) */
+/* 폴드 가로 모드 landscape — 4열+4열 안 되니까 7열 유지 */
 @media(orientation:landscape) and (min-width:700px) and (max-height:600px){
   .grid{grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
 }
 
-/* 일반 태블릿 세로 */
+/* 폴드 펼침 가로 모드 (landscape, 키 600~900px) — 7열로 넓게 */
+@media(orientation:landscape) and (min-width:700px) and (min-height:600px) and (max-height:900px){
+  .grid{grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+}
+
+/* 일반 태블릿 / PC (900px↑) */
 @media(min-width:900px){
   .grid{grid-template-columns:repeat(7,minmax(0,1fr))}
 }
 
-/* 중간 화면 (폴드 접힘 / 작은 태블릿) */
+/* 중간 화면 (폴드 접힘 / 작은 태블릿 세로) */
 @media(max-width:720px) and (min-width:461px){
   .grid{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
