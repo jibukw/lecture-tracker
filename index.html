@@ -109,7 +109,7 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 40px;min-height:calc(100vh
 .day-card.today .day-num{color:var(--accent)}
 .tags-wrap{display:flex;flex-direction:column;gap:3px;flex:1}
 .tag{display:flex;align-items:flex-start;gap:4px;padding:4px 7px;border-radius:var(--radius-sm);font-size:10px;font-weight:500;line-height:1.4}
-.tag-text{flex:1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.tag-text{flex:1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;word-break:break-all;}
 .tag-del{background:none;border:none;cursor:pointer;font-size:13px;line-height:1;padding:0 0 0 2px;opacity:.4;color:inherit;flex-shrink:0;margin-top:1px}
 .tag-del:hover{opacity:1}
 .add-wrap{position:relative;margin-top:auto}
@@ -462,7 +462,12 @@ function save(){
 // ── Date utils ──
 function getMonday(d){const dt=new Date(d),day=dt.getDay();dt.setDate(dt.getDate()-(day===0?6:day-1));dt.setHours(0,0,0,0);return dt;}
 function weekDates(){const m=getMonday(new Date());m.setDate(m.getDate()+weekOff*7);return Array.from({length:7},(_,i)=>{const d=new Date(m);d.setDate(d.getDate()+i);return d;});}
-function dk(d){return d.toISOString().slice(0,10);}
+function dk(d){
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,'0');
+  const day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
 function fs(d){return `${d.getMonth()+1}/${d.getDate()}`;}
 
 // ── Render week ──
