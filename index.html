@@ -307,14 +307,16 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 40px;min-height:calc(100vh
 .form-acts .bs{background:var(--accent);color:#fff;border-color:var(--accent)}
 .form-acts .bs:hover{background:var(--accent-mid)}
 .tip{
-  position:fixed;z-index:9999;pointer-events:none;
+  position:fixed;z-index:9999;
   background:var(--text);color:var(--bg);
   font-size:12px;font-weight:500;line-height:1.5;
   padding:8px 12px;border-radius:var(--radius-sm);
-  box-shadow:0 4px 12px rgba(0,0,0,.2);
+  box-shadow:0 4px 16px rgba(0,0,0,.25);
   max-width:calc(100vw - 16px);word-break:keep-all;
   opacity:0;transition:opacity .15s;
   white-space:pre-wrap;
+  cursor:grab;
+  user-select:none;
 }
 .tip.show{opacity:1}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--text);color:var(--bg);font-size:13px;font-weight:500;padding:9px 18px;border-radius:999px;box-shadow:var(--shadow-lg);opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap;z-index:999}
@@ -1289,23 +1291,77 @@ function toggleLangPanel(e){
 
 // 언어 패널 바깥 클릭 닫기는 아래 document click에서 처리
 
-// ── Tooltip ──
+// ── Tooltip (드래그 가능) ──
 const tipEl=document.getElementById('tip');
 let tipTimer;
+let tipDragging=false;
+let tipDragOX=0,tipDragOY=0;
+
 function showTip(e,text){
   clearTimeout(tipTimer);
   tipEl.textContent=text;
-  tipTimer=setTimeout(()=>{
-    // 툴팁을 화면 안쪽에 고정 배치
-    tipEl.style.left='8px';
-    tipEl.style.top='auto';
-    tipEl.style.bottom='80px';
-    tipEl.style.maxWidth=(window.innerWidth-16)+'px';
-    tipEl.classList.add('show');
-  },180);
+  // 초기 위치: 화면 하단 중앙
+  const tw=Math.min(280,window.innerWidth-16);
+  const x=Math.max(8,(window.innerWidth-tw)/2);
+  const y=window.innerHeight-120;
+  tipEl.style.left=x+'px';
+  tipEl.style.top=y+'px';
+  tipEl.style.maxWidth=tw+'px';
+  tipEl.style.bottom='';
+  tipTimer=setTimeout(()=>tipEl.classList.add('show'),180);
 }
 function moveTip(e){}
-function hideTip(){clearTimeout(tipTimer);tipEl.classList.remove('show');}
+function hideTip(){
+  if(tipDragging)return;
+  clearTimeout(tipTimer);
+  tipEl.classList.remove('show');
+}
+
+// 마우스 드래그
+tipEl.addEventListener('mousedown',e=>{
+  tipDragging=true;
+  tipDragOX=e.clientX-tipEl.getBoundingClientRect().left;
+  tipDragOY=e.clientY-tipEl.getBoundingClientRect().top;
+  tipEl.style.cursor='grabbing';
+  e.preventDefault();
+});
+document.addEventListener('mousemove',e=>{
+  if(!tipDragging)return;
+  let x=e.clientX-tipDragOX;
+  let y=e.clientY-tipDragOY;
+  x=Math.max(0,Math.min(x,window.innerWidth-tipEl.offsetWidth));
+  y=Math.max(0,Math.min(y,window.innerHeight-tipEl.offsetHeight));
+  tipEl.style.left=x+'px';tipEl.style.top=y+'px';
+});
+document.addEventListener('mouseup',()=>{
+  tipDragging=false;
+  tipEl.style.cursor='grab';
+});
+
+// 터치 드래그
+tipEl.addEventListener('touchstart',e=>{
+  tipDragging=true;
+  const t=e.touches[0];
+  tipDragOX=t.clientX-tipEl.getBoundingClientRect().left;
+  tipDragOY=t.clientY-tipEl.getBoundingClientRect().top;
+  e.preventDefault();
+},{passive:false});
+tipEl.addEventListener('touchmove',e=>{
+  if(!tipDragging)return;
+  const t=e.touches[0];
+  let x=t.clientX-tipDragOX;
+  let y=t.clientY-tipDragOY;
+  x=Math.max(0,Math.min(x,window.innerWidth-tipEl.offsetWidth));
+  y=Math.max(0,Math.min(y,window.innerHeight-tipEl.offsetHeight));
+  tipEl.style.left=x+'px';tipEl.style.top=y+'px';
+  e.preventDefault();
+},{passive:false});
+tipEl.addEventListener('touchend',()=>{tipDragging=false;});
+
+// 툴팁 탭하면 닫기
+tipEl.addEventListener('click',()=>{
+  tipEl.classList.remove('show');
+});
 
 initTheme();
 initLang();
