@@ -310,9 +310,9 @@ main{max-width:1200px;margin:0 auto;padding:28px 20px 40px;min-height:calc(100vh
   position:fixed;z-index:9999;pointer-events:none;
   background:var(--text);color:var(--bg);
   font-size:12px;font-weight:500;line-height:1.5;
-  padding:6px 10px;border-radius:var(--radius-sm);
+  padding:8px 12px;border-radius:var(--radius-sm);
   box-shadow:0 4px 12px rgba(0,0,0,.2);
-  max-width:260px;word-break:keep-all;
+  max-width:calc(100vw - 16px);word-break:keep-all;
   opacity:0;transition:opacity .15s;
   white-space:pre-wrap;
 }
@@ -1295,16 +1295,16 @@ let tipTimer;
 function showTip(e,text){
   clearTimeout(tipTimer);
   tipEl.textContent=text;
-  moveTip(e);
-  tipTimer=setTimeout(()=>tipEl.classList.add('show'),180);
+  tipTimer=setTimeout(()=>{
+    // 툴팁을 화면 안쪽에 고정 배치
+    tipEl.style.left='8px';
+    tipEl.style.top='auto';
+    tipEl.style.bottom='80px';
+    tipEl.style.maxWidth=(window.innerWidth-16)+'px';
+    tipEl.classList.add('show');
+  },180);
 }
-function moveTip(e){
-  const pad=14,tw=tipEl.offsetWidth||260,th=tipEl.offsetHeight||40;
-  let x=e.clientX+pad,y=e.clientY+pad;
-  if(x+tw>window.innerWidth-8)x=e.clientX-tw-pad;
-  if(y+th>window.innerHeight-8)y=e.clientY-th-pad;
-  tipEl.style.left=x+'px';tipEl.style.top=y+'px';
-}
+function moveTip(e){}
 function hideTip(){clearTimeout(tipTimer);tipEl.classList.remove('show');}
 
 initTheme();
