@@ -787,13 +787,14 @@ let dpResizing=false,dpResizeStartY=0,dpResizeStartH=0;
 let dpDragging=false,dpDragOX=0,dpDragOY=0;
 let dpLongPressTimer=null;
 
-// 터치: 꾹 누르면 이동, 짧게 누르면 리사이즈
+// 터치: 드래그로 이동 + 높이 조절
 dpHandle.addEventListener('touchstart',e=>{
   const t=e.touches[0];
   dpResizeStartY=t.clientY;
   dpResizeStartH=dpEl.offsetHeight;
   dpDragOX=t.clientX-dpEl.getBoundingClientRect().left;
   dpDragOY=t.clientY-dpEl.getBoundingClientRect().top;
+  dpDragging=false;
   // 300ms 이상 누르면 이동 모드
   dpLongPressTimer=setTimeout(()=>{
     dpDragging=true;
@@ -802,7 +803,8 @@ dpHandle.addEventListener('touchstart',e=>{
   e.preventDefault();
 },{passive:false});
 
-document.addEventListener('touchmove',e=>{
+dpHandle.addEventListener('touchmove',e=>{
+  clearTimeout(dpLongPressTimer);
   if(dpDragging){
     const t=e.touches[0];
     let x=t.clientX-dpDragOX;
@@ -812,16 +814,21 @@ document.addEventListener('touchmove',e=>{
     dpEl.style.left=x+'px';
     dpEl.style.top=y+'px';
     dpEl.style.bottom='';
-    e.preventDefault();
-  } else if(!dpDragging&&dpResizeStartH>0){
-    clearTimeout(dpLongPressTimer);
+  } else {
     const dy=dpResizeStartY-e.touches[0].clientY;
     const newH=Math.min(Math.max(150,dpResizeStartH+dy),window.innerHeight*0.9);
     dpEl.style.maxHeight=newH+'px';
     dpEl.style.height=newH+'px';
-    e.preventDefault();
   }
+  e.preventDefault();
 },{passive:false});
+
+dpHandle.addEventListener('touchend',()=>{
+  clearTimeout(dpLongPressTimer);
+  dpDragging=false;
+  dpResizeStartH=0;
+  dpHandle.style.background='';
+});
 
 document.addEventListener('touchend',()=>{
   clearTimeout(dpLongPressTimer);
